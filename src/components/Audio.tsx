@@ -2,11 +2,14 @@ import { createContext, useContext, useRef, useState } from 'react';
 
 import ambient from '../assets/sounds/bgSound.mp3';
 import departure from '../assets/sounds/departure.mp3';
+import gate from '../assets/sounds/gate-open.mp3';
 import refuse from '../assets/sounds/refuse.mp3';
+import horn from '../assets/sounds/train-horn.mp3';
 import station from '../assets/sounds/train-station.mp3';
 import whistle from '../assets/sounds/whistle.mp3';
+import whoosh from '../assets/sounds/whoosh.mp3';
 
-type Track = 'home' | 'boarding' | 'departure' | 'refuse';
+type Track = 'home' | 'boarding' | 'departure' | 'refuse' | 'horn' | 'gate' | 'whoosh';
 
 const AudioCtx = createContext<any>(null);
 
@@ -22,6 +25,9 @@ export function AudioProvider({ children }: any) {
     boarding: whistle,
     departure: departure,
     refuse: refuse,
+    horn: horn,
+    gate: gate,
+    whoosh: whoosh,
   };
 
   const startBackground = () => {

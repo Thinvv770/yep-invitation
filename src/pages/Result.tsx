@@ -56,7 +56,7 @@ export default function Result() {
         onClick={() => {
           localStorage.removeItem('boarding-pass');
           stop();
-          navigate('/', { replace: true });
+          navigate('/home', { replace: true });
         }}
       >
         ĐẶT LẠI 🎫
