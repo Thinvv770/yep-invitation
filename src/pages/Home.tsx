@@ -1,14 +1,18 @@
 import { Button, Input } from 'antd';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAudio } from '../components/Audio';
 
 export default function Home() {
-  const [name, setName] = useState('');
   const navigate = useNavigate();
   const { play } = useAudio();
+
+  const inputRef = useRef<HTMLDivElement>(null);
+
+  const [name, setName] = useState('');
+  const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const saved = localStorage.getItem('boarding-pass');
@@ -21,6 +25,17 @@ export default function Home() {
     localStorage.removeItem('boarding-draft');
   }, []);
 
+  useEffect(() => {
+    if (!inputRef.current) return;
+
+    const rect = inputRef.current.getBoundingClientRect();
+
+    setPos({
+      x: rect.left,
+      y: rect.bottom + 12, // cách input 12px
+    });
+  }, []);
+
   const handleStart = () => {
     const payload = { name };
 
@@ -28,6 +43,18 @@ export default function Home() {
     play('home');
     navigate('/survey', {
       state: payload,
+    });
+  };
+
+  const moveButton = () => {
+    const padding = 80;
+
+    const maxX = window.innerWidth - padding;
+    const maxY = window.innerHeight - padding;
+
+    setPos({
+      x: Math.random() * maxX,
+      y: Math.random() * maxY,
     });
   };
 
@@ -63,20 +90,39 @@ export default function Home() {
         <p className="intro-cta">
           Bạn đã sẵn sàng cho <strong>Chuyến tàu thời gian</strong> chưa?
           <br />
-          Hành khách vui lòng nhập tên để làm thủ tục lên tàu 😁
+          Nếu đã sẵn sàng, vui lòng nhập tên để làm thủ tục lên tàu 😁
         </p>
       </div>
 
-      <Input
-        placeholder="Nhập tên hành khách"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        style={{ maxWidth: 280 }}
-      />
+      <div ref={inputRef}>
+        <Input
+          placeholder="Nhập tên hành khách"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={{ maxWidth: 280 }}
+        />
+      </div>
 
-      <Button type="primary" className="retro-btn" disabled={!name} onClick={handleStart}>
-        LÊN TÀU 🚀
-      </Button>
+      {name ? (
+        <Button type="primary" className="retro-btn" disabled={!name} onClick={handleStart}>
+          LÊN TÀU 🚀
+        </Button>
+      ) : (
+        <Button
+          type="primary"
+          className="retro-btn"
+          style={{
+            position: 'fixed',
+            left: pos.x,
+            top: pos.y,
+            transition: 'all 0.25s ease',
+          }}
+          onMouseEnter={moveButton}
+          onMouseDown={moveButton}
+        >
+          Ở lại hiện tại 😢
+        </Button>
+      )}
     </div>
   );
 }

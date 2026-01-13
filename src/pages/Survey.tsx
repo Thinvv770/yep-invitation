@@ -1,4 +1,4 @@
-import { Button, InputNumber, Radio } from 'antd';
+import { Button, Input, InputNumber, Radio } from 'antd';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -10,13 +10,14 @@ type SurveyData = {
   name: string;
   join: boolean;
   count: number;
+  reason: string;
   checkedAt: string;
 };
 
 export default function Survey() {
   const navigate = useNavigate();
   const { state } = useLocation() as any;
-  const { play } = useAudio();
+  const { play, stop } = useAudio();
 
   const initialName = (() => {
     if (state?.name) return state.name;
@@ -24,6 +25,7 @@ export default function Survey() {
 
   const [join, setJoin] = useState(null);
   const [count, setCount] = useState(0);
+  const [reason, setReason] = useState('');
 
   useEffect(() => {
     if (!initialName) {
@@ -46,6 +48,7 @@ export default function Survey() {
       name: initialName,
       join,
       count: 0,
+      reason,
       checkedAt: new Date().toLocaleString(),
     };
 
@@ -55,6 +58,7 @@ export default function Survey() {
       'entry.1107872087': payload.name,
       'entry.1339218343': payload.join ? 'Yes' : 'No',
       'entry.380542753': String(payload.count),
+      'entry.694704585': reason,
     });
 
     try {
@@ -87,17 +91,28 @@ export default function Survey() {
         </Radio>
       </Radio.Group>
 
-      {join && (
-        <div style={{ marginTop: 16 }}>
-          <p>Những hành khách đồng hành cùng bạn</p>
-          <InputNumber min={0} max={10} value={count} onChange={(v) => setCount(v || 0)} />
-        </div>
-      )}
+      {join !== null &&
+        (join ? (
+          <div style={{ marginTop: 16 }}>
+            <p>Những hành khách đồng hành cùng bạn</p>
+            <InputNumber min={0} max={10} value={count} onChange={(v) => setCount(v || 0)} />
+          </div>
+        ) : (
+          <div style={{ marginTop: 16 }}>
+            <p>Lí do bạn muốn ở lại (bắt buộc) 😥</p>
+            <Input.TextArea
+              rows={4}
+              value={reason}
+              placeholder="Nhập lí do"
+              onChange={(v) => setReason(v.target.value)}
+            />
+          </div>
+        ))}
 
       <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
         <Button
           onClick={() => {
-            play('home');
+            stop();
             navigate(-1);
           }}
         >
@@ -110,7 +125,12 @@ export default function Survey() {
               LÀM THỦ TỤC 🚆
             </Button>
           ) : (
-            <Button type="primary" className="retro-btn" onClick={handleConfirmNoJoin}>
+            <Button
+              type="primary"
+              className="retro-btn"
+              disabled={!reason}
+              onClick={handleConfirmNoJoin}
+            >
               Xác nhận 😭
             </Button>
           ))}

@@ -1,5 +1,6 @@
 import { createContext, useContext, useRef, useState } from 'react';
 
+import ambient from '../assets/sounds/bgSound.mp3';
 import departure from '../assets/sounds/departure.mp3';
 import refuse from '../assets/sounds/refuse.mp3';
 import station from '../assets/sounds/train-station.mp3';
@@ -11,8 +12,10 @@ const AudioCtx = createContext<any>(null);
 
 export function AudioProvider({ children }: any) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [enabled, setEnabled] = useState(true);
+  const bgAudioRef = useRef<HTMLAudioElement | null>(null);
   const currentTrack = useRef<Track | null>(null);
+
+  const [enabled, setEnabled] = useState(true);
 
   const tracks: Record<Track, string> = {
     home: station,
@@ -21,13 +24,37 @@ export function AudioProvider({ children }: any) {
     refuse: refuse,
   };
 
+  const startBackground = () => {
+    if (!enabled) return;
+
+    if (!bgAudioRef.current) {
+      bgAudioRef.current = new Audio(ambient);
+      bgAudioRef.current.loop = true;
+      bgAudioRef.current.volume = 0.2;
+      bgAudioRef.current.play();
+    }
+  };
+
+  const duckBackground = (to: number) => {
+    if (!bgAudioRef.current) return;
+
+    bgAudioRef.current.volume = to;
+  };
+
   const play = async (track: Track) => {
     if (!enabled) return;
 
+    startBackground();
+    duckBackground(0.15);
+
     if (!audioRef.current) {
       audioRef.current = new Audio(tracks[track]);
-      audioRef.current.loop = true;
+      audioRef.current.loop = false;
       audioRef.current.volume = 0;
+
+      audioRef.current.onended = () => {
+        duckBackground(0.2);
+      };
     }
 
     if (currentTrack.current !== track) {
@@ -45,8 +72,8 @@ export function AudioProvider({ children }: any) {
     const id = setInterval(() => {
       if (!audioRef.current) return;
       v += 0.05;
-      audioRef.current.volume = Math.min(v, 0.5);
-      if (v >= 0.5) clearInterval(id);
+      audioRef.current.volume = Math.min(v, 0.35);
+      if (v >= 0.35) clearInterval(id);
     }, 60);
   };
 
@@ -68,8 +95,21 @@ export function AudioProvider({ children }: any) {
     currentTrack.current = null;
   };
 
+  const muteAll = () => {
+    if (audioRef.current) audioRef.current.muted = true;
+    if (bgAudioRef.current) bgAudioRef.current.muted = true;
+  };
+
+  const unmuteAll = () => {
+    if (audioRef.current) audioRef.current.muted = false;
+    if (bgAudioRef.current) bgAudioRef.current.muted = false;
+    bgAudioRef.current?.play().catch(() => {});
+  };
+
   return (
-    <AudioCtx.Provider value={{ play, stop, enabled, setEnabled }}>{children}</AudioCtx.Provider>
+    <AudioCtx.Provider value={{ play, stop, muteAll, unmuteAll, enabled, setEnabled }}>
+      {children}
+    </AudioCtx.Provider>
   );
 }
 

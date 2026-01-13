@@ -1,7 +1,7 @@
 import { useAudio } from './Audio';
 
 export default function MuteButton() {
-  const { enabled, setEnabled, stop } = useAudio();
+  const { enabled, setEnabled, muteAll, unmuteAll } = useAudio();
 
   return (
     <button
@@ -9,7 +9,11 @@ export default function MuteButton() {
         const next = !enabled;
         setEnabled(next);
         localStorage.setItem('audio-enabled', String(next));
-        if (!next) stop();
+        if (!next) {
+          muteAll();
+        } else {
+          unmuteAll();
+        }
       }}
       style={{
         position: 'fixed',
