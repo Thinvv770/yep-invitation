@@ -1,36 +1,35 @@
-import { Input, Button } from 'antd'
-import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { useAudio } from '../components/Audio'
+import { Button, Input } from 'antd';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { useAudio } from '../components/Audio';
 
 export default function Home() {
-  const [name, setName] = useState('')
-  const navigate = useNavigate()
-        const { play } = useAudio()
+  const [name, setName] = useState('');
+  const navigate = useNavigate();
+  const { play } = useAudio();
 
-
-
-  /* 🔁 AUTO REDIRECT NẾU ĐÃ CHECK-IN */
   useEffect(() => {
-    const saved = localStorage.getItem('boarding-pass')
+    const saved = localStorage.getItem('boarding-pass');
     if (saved) {
-      navigate('/result', { replace: true })
+      navigate('/result', { replace: true });
     }
-  }, [navigate])
+  }, [navigate]);
 
+  useEffect(() => {
+    localStorage.removeItem('boarding-draft');
+  }, []);
 
   const handleStart = () => {
-    const payload = { name }
+    const payload = { name };
 
-    // lưu tạm cho flow tiếp theo
-    localStorage.setItem('boarding-draft', JSON.stringify(payload))
-play('home')
-play('boarding')
-    navigate('/boarding', {
+    localStorage.setItem('boarding-draft', JSON.stringify(payload));
+    play('home');
+    navigate('/survey', {
       state: payload,
-    })
-  }
+    });
+  };
 
   return (
     <div className="screen">
@@ -39,23 +38,45 @@ play('boarding')
       </motion.h1>
 
       <div className="train">🚃🚃🚃</div>
-      <p>Quay về thập niên 2000</p>
+
+      <div className="intro">
+        <p className="intro-lead">⏳ Một chuyến tàu đặc biệt sắp khởi hành…</p>
+
+        <p>
+          Không cần vé, không cần hành lý.
+          <br />
+          Chỉ cần mang theo <span className="highlight">ký ức</span>.
+        </p>
+
+        <p>
+          Không phải để đi xa hơn,
+          <br />
+          mà để <span className="highlight">quay về</span>.
+        </p>
+
+        <p>
+          Về những năm tháng đầu tiên,
+          <br />
+          nơi mọi ký ức bắt đầu.
+        </p>
+
+        <p className="intro-cta">
+          Bạn đã sẵn sàng cho <strong>Chuyến tàu thời gian</strong> chưa?
+          <br />
+          Hành khách vui lòng nhập tên để làm thủ tục lên tàu 😁
+        </p>
+      </div>
 
       <Input
         placeholder="Nhập tên hành khách"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
         style={{ maxWidth: 280 }}
       />
 
-      <Button
-        type="primary"
-        className="retro-btn"
-        disabled={!name}
-        onClick={handleStart}
-      >
+      <Button type="primary" className="retro-btn" disabled={!name} onClick={handleStart}>
         LÊN TÀU 🚀
       </Button>
     </div>
-  )
+  );
 }

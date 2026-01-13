@@ -1,8 +1,9 @@
-import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import Boarding from './pages/Boarding'
-import Survey from './pages/Survey'
-import Result from './pages/Result'
+import { Route, Routes } from 'react-router-dom';
+
+import Boarding from './pages/Boarding';
+import Home from './pages/Home';
+import Result from './pages/Result';
+import Survey from './pages/Survey';
 
 export default function App() {
   return (
@@ -12,5 +13,5 @@ export default function App() {
       <Route path="/survey" element={<Survey />} />
       <Route path="/result" element={<Result />} />
     </Routes>
-  )
+  );
 }

@@ -7,5 +7,5 @@ export default function StationClock() {
         <div className="hand second" />
       </div>
     </div>
-  )
+  );
 }

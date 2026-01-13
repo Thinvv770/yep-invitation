@@ -1,63 +1,66 @@
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { Button } from 'antd'
+import { Button } from 'antd';
+import { useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { useAudio } from '../components/Audio';
 
 type ResultData = {
-  name: string
-  join: boolean
-  count: number
-}
+  name: string;
+  join: boolean;
+  count: number;
+};
 
 export default function Result() {
-  const { state } = useLocation() as any
-  const navigate = useNavigate()
-  const [data, setData] = useState<ResultData | null>(null)
+  const { state } = useLocation() as any;
+  const navigate = useNavigate();
+  const { stop } = useAudio();
+
+  const initialData = useMemo<ResultData | null>(() => {
+    const saved = localStorage.getItem('boarding-pass');
+    if (saved) return JSON.parse(saved);
+    return state ?? null;
+  }, [state]);
 
   useEffect(() => {
-    // 1️⃣ Ưu tiên localStorage
-    const saved = localStorage.getItem('boarding-pass')
-    if (saved) {
-      setData(JSON.parse(saved))
-      return
+    if (!initialData) {
+      navigate('/', { replace: true });
     }
-
-    // 2️⃣ Fallback từ state (lần đầu submit)
-    if (state) {
-      localStorage.setItem('boarding-pass', JSON.stringify(state))
-      setData(state)
-      return
-    }
-
-    // 3️⃣ Không có gì → quay về Home
-    navigate('/', { replace: true })
-  }, [state, navigate])
-
-  if (!data) return null
+  }, [initialData, navigate]);
 
   return (
     <div className="screen">
       <h1>🚆 ĐÃ GHI NHẬN</h1>
 
-      <p><strong>Hành khách:</strong> {data.name}</p>
-
       <p>
-        {data.join
-          ? '🎉 Hẹn gặp bạn trên chuyến tàu!'
-          : '😢 Hẹn dịp khác nhé!'}
+        <strong>Hành khách:</strong> {initialData?.name}
       </p>
 
-      {data.join && <p>Số người đi cùng: {data.count}</p>}
+      <div className="final-message">
+        {initialData?.join ? (
+          <>
+            <p className="final-title">🎉 Thủ tục hoàn tất.</p>
+            <p className="final-sub">Hẹn gặp bạn trên chuyến tàu thời gian. 🤗</p>
+          </>
+        ) : (
+          <>
+            <p className="final-title">😙 Không sao cả.</p>
+            <p className="final-sub">Chuyến tàu này sẽ luôn sẵn sàng khi bạn muốn quay về. 🥰</p>
+          </>
+        )}
+      </div>
 
-      {/* OPTIONAL */}
+      {initialData?.join && <p>Số người đi cùng: {initialData?.count}</p>}
+
       <Button
         type="default"
         onClick={() => {
-          localStorage.removeItem('boarding-pass')
-          navigate('/', { replace: true })
+          localStorage.removeItem('boarding-pass');
+          stop();
+          navigate('/', { replace: true });
         }}
       >
         ĐẶT LẠI 🎫
       </Button>
     </div>
-  )
+  );
 }

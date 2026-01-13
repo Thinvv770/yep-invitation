@@ -265,3 +265,70 @@ body::before {
   pointer-events: none;
   z-index: 2;
 }
+
+.intro {
+  color: #fff;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.intro p {
+  margin: 12px 0;
+  opacity: 0.9;
+}
+
+.intro-lead {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.highlight {
+  color: #ffd166;
+  font-weight: 600;
+}
+
+.intro-cta {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  opacity: 1;
+}
+
+.final-message {
+  text-align: center;
+  color: #fff;
+}
+
+.final-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.final-sub {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.final-title {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.final-sub {
+  animation: fadeUp 0.6s ease forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
