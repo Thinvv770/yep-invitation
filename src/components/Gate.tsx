@@ -1,7 +1,7 @@
 import './Gate.css';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import gate from '../assets/images/gate.jpg';
@@ -11,6 +11,9 @@ export default function Gate() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { play } = useAudio();
+
+  const bgRef = useRef(null);
+  const doorRef = useRef(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('boarding-pass');
@@ -36,6 +39,65 @@ export default function Gate() {
     }, 3000);
   };
 
+  useEffect(() => {
+    const updateDoor = () => {
+      const img = bgRef.current as HTMLImageElement | null;
+      const door = doorRef.current as HTMLDivElement | null;
+      if (!img || !door) return;
+
+      const boxW = img.clientWidth;
+      const boxH = img.clientHeight;
+
+      const IMG_W = 1920;
+      const IMG_H = 1080;
+
+      const imgRatio = IMG_W / IMG_H;
+      const boxRatio = boxW / boxH;
+
+      let drawW: number, drawH: number, offsetX: number, offsetY: number;
+
+      if (imgRatio > boxRatio) {
+        drawH = boxH;
+        drawW = drawH * imgRatio;
+        offsetX = (boxW - drawW) / 2;
+        offsetY = 0;
+      } else {
+        drawW = boxW;
+        drawH = drawW / imgRatio;
+        offsetX = 0;
+        offsetY = (boxH - drawH) / 2;
+      }
+
+      const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+      const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+      const t = clamp((boxRatio - 1.6) / (1.9 - 1.6), 0, 1);
+
+      const BASE_X = 0.5;
+      const BASE_Y = 0.68;
+      const BASE_W = 0.165;
+
+      const FIX_Y = 0.7;
+      const FIX_W = 0.225;
+
+      const DOOR_X = BASE_X;
+      const DOOR_Y = lerp(BASE_Y, FIX_Y, t);
+      const DOOR_W = lerp(BASE_W, FIX_W, t);
+
+      const left = offsetX + drawW * DOOR_X;
+      const top = offsetY + drawH * DOOR_Y;
+      const width = drawW * DOOR_W;
+
+      door.style.left = `${left}px`;
+      door.style.top = `${top}px`;
+      door.style.width = `${width}px`;
+    };
+
+    updateDoor();
+    window.addEventListener('resize', updateDoor);
+    return () => window.removeEventListener('resize', updateDoor);
+  }, []);
+
   return (
     <div className={`gate-screen ${open ? 'open' : ''}`}>
       <motion.div
@@ -47,9 +109,9 @@ export default function Gate() {
           ease: [0.16, 1, 0.3, 1],
         }}
       >
-        <img src={gate} className="bg" alt="gate" />
+        <img src={gate} className="bg" ref={bgRef} />
 
-        <div className="door-mask">
+        <div ref={doorRef} className="door-mask">
           <motion.div
             className="door left"
             animate={open ? { rotateY: -100, z: -80 } : {}}

@@ -36,36 +36,6 @@ body::before {
   to { transform: translateX(120%); }
 }
 
-.boarding-pass {
- position: relative;
-  z-index: 5;
-
-  width: 320px;
-  padding: 24px;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 248, 220, 0.95),
-      rgba(245, 235, 200, 0.92)
-    );
-
-  color: #3a2a1a;
-
-  border-radius: 14px;
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.45),
-    inset 0 0 0 1px rgba(120, 90, 40, 0.3);
-
-  font-family: 'Courier New', monospace;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-
-@keyframes ticketEnter {
-  from { transform: translateY(40px) rotate(-2deg); opacity: 0; }
-  to { transform: translateY(0) rotate(0); opacity: 1; }
-}
-
 .retro-btn {
   background: linear-gradient(90deg, #ffd666, #ff8c00);
   border: none;
@@ -77,11 +47,6 @@ body::before {
   h1, h2 { font-size: 20px; }
 }
 
-/* ===============================
-   🎬 CINEMATIC FINISH
-================================ */
-
-/* ===== Station Clock ===== */
 .station-clock {
   position: absolute;
   top: 24px;
@@ -135,7 +100,6 @@ body::before {
   }
 }
 
-/* ===== Steam / Fog ===== */
 .steam-container {
   position: absolute;
   left: 50%;
@@ -220,37 +184,121 @@ body::before {
   animation-duration: 6.5s;
 }
 
-/* ===== Boarding Pass Cinematic ===== */
 .boarding-pass {
   position: relative;
-  animation: ticketEnter 0.8s ease-out;
+  z-index: 5;
+
+  width: 320px;
+  padding: 26px 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 248, 220, 0.96),
+      rgba(238, 222, 180, 0.92)
+    ),
+    radial-gradient(
+      circle at 18% 28%,
+      rgba(120, 90, 40, 0.08),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 82% 72%,
+      rgba(120, 90, 40, 0.06),
+      transparent 55%
+    );
+
+  color: #3a2a1a;
+  border-radius: 10px;
+
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(120, 90, 40, 0.35),
+    inset 0 0 14px rgba(120, 90, 40, 0.25);
+
+  font-family: 'Courier New', monospace;
+  text-shadow:
+    0.5px 0.5px 0 rgba(0, 0, 0, 0.15),
+    -0.5px -0.5px 0 rgba(255, 255, 255, 0.25);
+
+  transform:
+    rotate(-1.2deg)
+    skewX(-0.4deg);
+
+  animation: ticketEnter 0.9s ease-out;
+}
+
+.boarding-pass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.3),
+      rgba(0,0,0,0.12),
+      rgba(255,255,255,0.2)
+    );
+  mix-blend-mode: overlay;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.boarding-pass::after {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  background:
+    radial-gradient(
+      circle,
+      rgba(0, 0, 0, 0.35),
+      transparent 70%
+    );
+  z-index: -1;
+}
+
+.boarding-pass h2 {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 2px;
+  opacity: 0.88;
+}
+
+.boarding-pass p {
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.boarding-pass strong {
+  font-weight: 600;
+}
+
+.boarding-pass:hover {
+  transform:
+    rotate(0.6deg)
+    skewX(0.2deg)
+    scale(1.01);
 }
 
 @keyframes ticketEnter {
   from {
-    transform: translateY(50px) rotate(-2deg);
+    transform:
+      translateY(50px)
+      rotate(-3deg)
+      skewX(-0.6deg);
     opacity: 0;
   }
   to {
-    transform: translateY(0) rotate(0);
+    transform:
+      translateY(0)
+      rotate(-1.2deg)
+      skewX(-0.4deg);
     opacity: 1;
   }
 }
 
-/* Răng cưa vé tàu */
-.boarding-pass::after {
-  content: '';
-  position: absolute;
-  inset: -30px;
-  background: radial-gradient(
-    circle,
-    rgba(0, 0, 0, 0.35),
-    transparent 70%
-  );
-  z-index: -1;
-}
-
-/* ===== Subtle vignette ===== */
 .screen::after {
   content: '';
   position: fixed;

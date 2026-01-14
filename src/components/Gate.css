@@ -16,10 +16,11 @@
 
 .door-mask {
   position: absolute;
-  left: 50%;
+  aspect-ratio: 1 / 1.6;
+  /* left: 50%;
   top: 69%;
   width: min(60vw, 300px);
-  height: calc(min(60vw, 300px) * 1.6);
+  height: calc(min(60vw, 300px) * 1.6); */
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -49,7 +50,6 @@
   background-position: right top;
   transform-origin: right center;
   border-top-right-radius: clamp(40px, 8vw, 120px);
-
 }
 
 .scene {
@@ -129,9 +129,9 @@
     transform: scale(1.05);
   }
 
-  .door-mask {
+  /* .door-mask {
     top: 67%;
     width: min(60vw, 420px);
     height: calc(min(60vw, 420px) * 1.7);
-  }
+  } */
 }
