@@ -2,19 +2,16 @@ import { Button, notification } from 'antd';
 import { toPng } from 'html-to-image';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { SurveyData } from 'types/Survey';
 
 import { useAudio } from '../components/Audio';
+import { getUserKey } from '../components/helper';
 import StationClock from '../components/StationClock';
 import Steam from '../components/SteamFog';
+import Waiting from '../components/Waiting';
 
-const GOOGLE_FORM_ACTION = import.meta.env.VITE_GOOGLE_FORM_URL;
-
-type SurveyData = {
-  name: string;
-  join: boolean;
-  count: number;
-  checkedAt: string;
-};
+// const GOOGLE_FORM_ACTION = import.meta.env.VITE_GOOGLE_FORM_URL;
+const SURVEY_API = import.meta.env.VITE_SURVEY_API;
 
 export default function Boarding() {
   const navigate = useNavigate();
@@ -23,6 +20,8 @@ export default function Boarding() {
   const passRef = useRef<HTMLDivElement>(null);
 
   const [isSubmit, setIsSubmit] = useState(false);
+  const [seatNumber, setSeatNumber] = useState(0);
+  const [handling, setHandling] = useState(false);
 
   const initialData = (() => {
     if (state) return state;
@@ -32,7 +31,7 @@ export default function Boarding() {
     return state ?? {};
   })();
 
-  const { name: initialName, join, count: guests } = initialData;
+  const { name: initialName, join, count: guests, nickname } = initialData;
 
   useEffect(() => {
     if (!initialName) {
@@ -49,37 +48,65 @@ export default function Boarding() {
     }
   }, [initialName, navigate]);
 
+  useEffect(() => {
+    if (isSubmit) {
+      document.body.classList.remove('bg-train');
+      document.body.classList.add('bg-success');
+    }
+  }, [isSubmit]);
+
   const handleSubmit = async () => {
     if (!initialName || join === null) return;
-
-    const payload: SurveyData = {
-      name: initialName,
-      join,
-      count: join ? guests : 0,
-      checkedAt: new Date().toLocaleString(),
-    };
-
-    localStorage.setItem('boarding-pass', JSON.stringify(payload));
-
-    const formBody = new URLSearchParams({
-      'entry.1107872087': payload.name,
-      'entry.1339218343': payload.join ? 'Yes' : 'No',
-      'entry.380542753': String(payload.count),
-    });
+    setHandling(true);
 
     try {
-      await fetch(GOOGLE_FORM_ACTION, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formBody,
+      const userKey = getUserKey();
+
+      const body = new URLSearchParams({
+        name: initialName,
+        join,
+        count: String(join ? guests : 0),
+        userKey,
+        nickname,
       });
+
+      const res = await fetch(SURVEY_API, {
+        method: 'POST',
+        body,
+      });
+
+      const result = await res.json();
+
+      setSeatNumber(result.randomNumber);
+
+      if (result.error) {
+        notification.error({ message: result.error });
+        return;
+      }
+
+      const payload: SurveyData = {
+        name: initialName,
+        join,
+        count: join ? guests : 0,
+        checkedAt: new Date().toLocaleString(),
+        randomNumber: result.randomNumber,
+        userKey,
+        nickname,
+      };
+
+      localStorage.setItem('boarding-pass', JSON.stringify(payload));
+
       notification.success({
         message: 'Chúc mừng bạn đã hoàn tất thủ tục.',
-        description: 'Bạn có thể tải vé ở dưới đây hoặc tiếp tục tới bước tiếp theo.',
+        description: `Bạn có thể tải vé ở dưới đây hoặc tiếp tục tới bước tiếp theo.`,
       });
+
       setIsSubmit(true);
+      play('horn');
     } catch (err) {
-      console.warn('Google Form submit failed', err);
+      console.log(err);
+    } finally {
+      setHandling(false);
     }
   };
 
@@ -87,7 +114,7 @@ export default function Boarding() {
     if (!passRef.current) return;
 
     const dataUrl = await toPng(passRef.current, {
-      backgroundColor: '#f5f0e6', // màu giấy retro
+      backgroundColor: '#f5f0e6',
       pixelRatio: 2,
     });
 
@@ -99,6 +126,7 @@ export default function Boarding() {
 
   return (
     <div className="screen" style={{ position: 'relative' }}>
+      {handling ? <Waiting /> : null}
       <StationClock />
 
       <div className="fx-layer">
@@ -125,6 +153,11 @@ export default function Boarding() {
         <p>
           <strong>Hành khách đồng hành:</strong> {guests || 0}
         </p>
+        {isSubmit ? (
+          <p>
+            <strong>Số ghế:</strong> {seatNumber}
+          </p>
+        ) : null}
       </div>
 
       {!isSubmit ? (
@@ -132,7 +165,10 @@ export default function Boarding() {
           <Button
             onClick={() => {
               stop();
-              navigate(-1);
+              navigate('/survey', {
+                state: {},
+                replace: true,
+              });
             }}
           >
             ⬅ Chỉnh sửa thông tin

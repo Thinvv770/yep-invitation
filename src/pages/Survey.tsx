@@ -1,140 +1,139 @@
-import { Button, Input, InputNumber, Radio } from 'antd';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Button, notification } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SurveyData } from 'types/Survey';
 
 import { useAudio } from '../components/Audio';
+import { getUserKey } from '../components/helper';
+import { StepRenderer } from '../components/SurveySteps';
+import { BASESTEPS, JOINSTEPS } from '../components/SurveySteps/constants';
+import Waiting from '../components/Waiting';
 
-const GOOGLE_FORM_ACTION = import.meta.env.VITE_GOOGLE_FORM_URL;
-
-type SurveyData = {
-  name: string;
-  join: boolean;
-  count: number;
-  reason: string;
-  checkedAt: string;
-};
+const SURVEY_API = import.meta.env.VITE_SURVEY_API;
 
 export default function Survey() {
   const navigate = useNavigate();
-  const { state } = useLocation() as any;
   const { play, stop } = useAudio();
 
-  const initialName = (() => {
-    if (state?.name) return state.name;
+  const [stepIndex, setStepIndex] = useState(0);
+  const [data, setData] = useState<any>({});
+  const [handling, setHandling] = useState<boolean>(false);
+
+  const computedSteps = (() => {
+    if (data.join === true) {
+      return [...BASESTEPS, JOINSTEPS.true];
+    }
+
+    if (data.join === false) {
+      return [...BASESTEPS, JOINSTEPS.false];
+    }
+
+    return BASESTEPS;
   })();
 
-  const [join, setJoin] = useState(null);
-  const [count, setCount] = useState(0);
-  const [reason, setReason] = useState('');
+  const isDone = stepIndex >= computedSteps.length;
 
-  useEffect(() => {
-    if (!initialName) {
-      navigate('/', { replace: true });
-      return;
-    }
-  }, [initialName, navigate]);
+  const next = () => setStepIndex((i) => i + 1);
+  const prev = () => setStepIndex((i) => i - 1);
 
-  const handleNext = () => {
-    play('boarding');
-    navigate('/boarding', {
-      state: { name: initialName, join, count },
-    });
-  };
+  const handleConfirmNoJoin = useCallback(async () => {
+    if (!data.name || data.join === null) return;
 
-  const handleConfirmNoJoin = async () => {
-    if (!initialName || join === null) return;
-
-    const payload: SurveyData = {
-      name: initialName,
-      join,
-      count: 0,
-      reason,
-      checkedAt: new Date().toLocaleString(),
-    };
-
-    localStorage.setItem('boarding-pass', JSON.stringify(payload));
-
-    const formBody = new URLSearchParams({
-      'entry.1107872087': payload.name,
-      'entry.1339218343': payload.join ? 'Yes' : 'No',
-      'entry.380542753': String(payload.count),
-      'entry.694704585': reason,
-    });
+    setHandling(true);
 
     try {
-      await fetch(GOOGLE_FORM_ACTION, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: formBody,
-      });
-    } catch (err) {
-      console.warn('Google Form submit failed', err);
-    }
+      const userKey = getUserKey();
 
-    play('refuse');
-    navigate('/result', { replace: true });
-  };
+      const body = new URLSearchParams({
+        userKey,
+        ...data,
+      });
+
+      const res = await fetch(SURVEY_API, {
+        method: 'POST',
+        body,
+      });
+
+      const result = await res.json();
+
+      if (result.error) {
+        notification.error({ message: result.error });
+        return;
+      }
+
+      const payload: SurveyData = {
+        name: data.name,
+        join: data.join,
+        count: 0,
+        reason: data.reason,
+        checkedAt: new Date().toLocaleString(),
+        userKey,
+      };
+
+      localStorage.setItem('boarding-pass', JSON.stringify(payload));
+
+      notification.success({
+        message: 'Cảm ơn bạn.',
+        description: `Hẹn bạn vào chuyến tàu tới.`,
+      });
+
+      play('refuse');
+      navigate('/result', { replace: true });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setHandling(false);
+    }
+  }, [data, navigate, play]);
+
+  useEffect(() => {
+    if (!isDone || handling) return;
+
+    const { join } = data;
+
+    if (join) {
+      play('boarding');
+      navigate('/boarding', {
+        state: {
+          reason: '',
+          count: data.count || 0,
+          ...data,
+        },
+        replace: true,
+      });
+    } else {
+      handleConfirmNoJoin();
+    }
+  }, [isDone, data, handling, navigate, play, handleConfirmNoJoin]);
 
   return (
     <div className="screen">
-      <h2>
-        Hành khách <span className="highlight">{initialName}</span> đã sẵn sàng cho chuyến tàu này
-        chưa?
-      </h2>
+      {handling ? <Waiting /> : null}
+      {!isDone && (
+        <>
+          <StepRenderer
+            step={computedSteps[stepIndex]}
+            value={data[computedSteps[stepIndex].id]}
+            onChange={(val: any) =>
+              setData((prev: any) => ({
+                ...prev,
+                [computedSteps[stepIndex].id]: val,
+              }))
+            }
+            onNext={next}
+            onPrev={stepIndex > 0 ? prev : undefined}
+          />
 
-      <Radio.Group value={join} onChange={(e) => setJoin(e.target.value)}>
-        <Radio style={{ color: 'white' }} value={true}>
-          Lên tàu 🎉
-        </Radio>
-        <Radio style={{ color: 'white' }} value={false}>
-          Ở lại hiện tại 😢
-        </Radio>
-      </Radio.Group>
-
-      {join !== null &&
-        (join ? (
-          <div style={{ marginTop: 16 }}>
-            <p>Những hành khách đồng hành cùng bạn</p>
-            <InputNumber min={0} max={10} value={count} onChange={(v) => setCount(v || 0)} />
-          </div>
-        ) : (
-          <div style={{ marginTop: 16 }}>
-            <p>Lí do bạn muốn ở lại (bắt buộc) 😥</p>
-            <Input.TextArea
-              rows={4}
-              value={reason}
-              placeholder="Nhập lí do"
-              onChange={(v) => setReason(v.target.value)}
-            />
-          </div>
-        ))}
-
-      <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-        <Button
-          onClick={() => {
-            stop();
-            navigate(-1);
-          }}
-        >
-          ⬅ Quay lại ga trước
-        </Button>
-
-        {join !== null &&
-          (join ? (
-            <Button type="primary" className="retro-btn" onClick={handleNext}>
-              LÀM THỦ TỤC 🚆
-            </Button>
-          ) : (
-            <Button
-              type="primary"
-              className="retro-btn"
-              disabled={!reason}
-              onClick={handleConfirmNoJoin}
-            >
-              Xác nhận 😭
-            </Button>
-          ))}
-      </div>
+          <Button
+            onClick={() => {
+              stop();
+              navigate(-1);
+            }}
+          >
+            ⬅ Quay lại ga trước
+          </Button>
+        </>
+      )}
     </div>
   );
 }

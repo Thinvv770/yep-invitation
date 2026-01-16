@@ -1,8 +1,10 @@
 import { Button } from 'antd';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useAudio } from '../components/Audio';
+import { getUserKey } from '../components/helper';
+import Waiting from '../components/Waiting';
 
 type ResultData = {
   name: string;
@@ -14,6 +16,8 @@ export default function Result() {
   const { state } = useLocation() as any;
   const navigate = useNavigate();
   const { stop } = useAudio();
+
+  const [handling, setHandling] = useState(false);
 
   const initialData = useMemo<ResultData | null>(() => {
     const saved = localStorage.getItem('boarding-pass');
@@ -27,8 +31,28 @@ export default function Result() {
     }
   }, [initialData, navigate]);
 
+  const resetUser = async () => {
+    setHandling(true);
+    const userKey = getUserKey();
+
+    const body = new URLSearchParams({
+      action: 'reset',
+      userKey,
+    });
+
+    await fetch(import.meta.env.VITE_SURVEY_API, {
+      method: 'POST',
+      body,
+    });
+
+    localStorage.removeItem('boarding-pass');
+    localStorage.removeItem('user-key');
+    setHandling(false);
+  };
+
   return (
     <div className="screen">
+      {handling ? <Waiting /> : null}
       <h1>🚆 ĐÃ GHI NHẬN</h1>
 
       <p>
@@ -53,9 +77,11 @@ export default function Result() {
 
       <Button
         type="default"
-        onClick={() => {
-          localStorage.removeItem('boarding-pass');
+        onClick={async () => {
+          await resetUser();
           stop();
+          document.body.classList.remove('bg-success');
+          document.body.classList.add('bg-train');
           navigate('/home', { replace: true });
         }}
       >

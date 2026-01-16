@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 import Gate from './components/Gate';
@@ -7,6 +8,10 @@ import Result from './pages/Result';
 import Survey from './pages/Survey';
 
 export default function App() {
+  useEffect(() => {
+    document.body.classList.add('bg-train');
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Gate />} />
