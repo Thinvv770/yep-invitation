@@ -134,18 +134,12 @@ export default function Boarding() {
       </div>
 
       <div className="boarding-pass" ref={passRef}>
-        <h2>🎫 Thẻ lên tàu</h2>
+        <h2>{isSubmit ? `🎫 Thẻ lên tàu` : `📩 Xác nhận thông tin`}</h2>
         <p>
           <strong>Hành khách:</strong> {initialName}
         </p>
         <p>
           <strong>Ngày đi:</strong> 31/01/2026
-        </p>
-        <p>
-          <strong>Giờ đi:</strong> 17h00
-        </p>
-        <p>
-          <strong>Ga đi:</strong> Địa chỉ nhà hàng...
         </p>
         <p>
           <strong>Ga đến:</strong> Thập niên 2000 ✨

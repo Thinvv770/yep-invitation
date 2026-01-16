@@ -63,6 +63,9 @@ export default function Result() {
         {initialData?.join ? (
           <>
             <p className="final-title">🎉 Thủ tục hoàn tất.</p>
+            <p className="final-sub">
+              Thông tin chi tiết về chuyến đi sẽ được gửi đến bạn trong thời gian sớm nhất.
+            </p>
             <p className="final-sub">Hẹn gặp bạn trên chuyến tàu thời gian. 🤗</p>
           </>
         ) : (
