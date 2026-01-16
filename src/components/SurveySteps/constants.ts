@@ -21,7 +21,7 @@ export const BASESTEPS = [
 export const JOINSTEPS = {
   true: {
     id: 'count',
-    lead: '🚆 Bạn muốn lên tàu cùng bao nhiêu người?',
+    lead: '🚆 Sẽ có bao nhiêu người thân tham gia chuyến tàu cùng với bạn?',
     placeholder: 'Số người',
     type: 'number',
   },

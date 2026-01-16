@@ -151,7 +151,7 @@ export default function Boarding() {
           <strong>Ga đến:</strong> Thập niên 2000 ✨
         </p>
         <p>
-          <strong>Hành khách đồng hành:</strong> {guests || 0}
+          <strong>Người thân đi cùng:</strong> {guests || 0}
         </p>
         {isSubmit ? (
           <p>

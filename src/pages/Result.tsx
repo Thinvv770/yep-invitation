@@ -68,7 +68,7 @@ export default function Result() {
         ) : (
           <>
             <p className="final-title">😙 Không sao cả.</p>
-            <p className="final-sub">Chuyến tàu này sẽ luôn sẵn sàng khi bạn muốn quay về. 🥰</p>
+            <p className="final-sub">Chuyến tàu này sẽ luôn sẵn sàng khi bạn đổi ý. 🥰</p>
           </>
         )}
       </div>
