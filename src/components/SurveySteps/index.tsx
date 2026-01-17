@@ -60,10 +60,10 @@ const StepCard = ({ step, value, onChange, onNext, onPrev }: any) => {
 
       {step.type === 'radio' ? (
         <Radio.Group value={value} onChange={(e) => onChange(e.target.value)}>
-          <Radio style={{ color: 'white' }} value={true}>
+          <Radio style={{ color: '#1f2d4d' }} value={true}>
             Lên tàu 🎉
           </Radio>
-          <Radio style={{ color: 'white' }} value={false}>
+          <Radio style={{ color: '#1f2d4d' }} value={false}>
             Ở lại hiện tại 😢
           </Radio>
         </Radio.Group>

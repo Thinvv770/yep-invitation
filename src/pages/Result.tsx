@@ -78,6 +78,12 @@ export default function Result() {
 
       {initialData?.join && <p>Số người đi cùng: {initialData?.count}</p>}
 
+      <p>
+        Quầy thủ tục sẽ đóng vào lúc <span className="highlight"> 23h59, ngày 18/01/2026</span>.
+        <br /> <br /> Nếu có bất kỳ thay đổi nào, vui lòng hành khách cập nhật thông tin sớm nhất có
+        thể.
+      </p>
+
       <Button
         type="default"
         onClick={async () => {
